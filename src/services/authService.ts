@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { User, Wallet } from '../models';
 import { RoleType } from '../models/Role';
 import poolService from './poolService';
+import mongoose from 'mongoose';
 
 // JWT secret from environment variables
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -61,9 +62,16 @@ class AuthService {
     });
     await wallet.save();
 
+    // Update user with wallet reference
+    newUser.wallet = wallet._id;
+    await newUser.save();
+
     // If user is in pooled mode, assign to a pool
     if (newUser.tradingMode === 'pooled') {
-      await poolService.findOrCreatePoolForUser(newUser._id.toString());
+      const poolId = await poolService.findOrCreatePoolForUser(newUser._id.toString());
+      // Update user with pool reference
+      newUser.poolId = new mongoose.Types.ObjectId(poolId);
+      await newUser.save();
     }
 
     // Return user without password

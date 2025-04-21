@@ -8,6 +8,7 @@ const uuid_1 = require("uuid");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const models_1 = require("../models");
 const poolService_1 = __importDefault(require("./poolService"));
+const mongoose_1 = __importDefault(require("mongoose"));
 // JWT secret from environment variables
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
@@ -50,9 +51,15 @@ class AuthService {
             isActive: true
         });
         await wallet.save();
+        // Update user with wallet reference
+        newUser.wallet = wallet._id;
+        await newUser.save();
         // If user is in pooled mode, assign to a pool
         if (newUser.tradingMode === 'pooled') {
-            await poolService_1.default.findOrCreatePoolForUser(newUser._id.toString());
+            const poolId = await poolService_1.default.findOrCreatePoolForUser(newUser._id.toString());
+            // Update user with pool reference
+            newUser.poolId = new mongoose_1.default.Types.ObjectId(poolId);
+            await newUser.save();
         }
         // Return user without password
         const { passwordHash: _, ...userWithoutPassword } = newUser.toObject();
