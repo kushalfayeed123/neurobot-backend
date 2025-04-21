@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const userController_1 = require("../controllers/userController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
 const router = express_1.default.Router();
-router.get('/profile', authMiddleware_1.authenticateJWT, userController_1.getProfile);
+router.get('/profile', authMiddleware_1.authenticateJWT, userController_1.getUserProfile);
 router.post('/update-token', authMiddleware_1.authenticateJWT, userController_1.updateDerivToken);
+router.get('/all', authMiddleware_1.authenticateJWT, userController_1.getAllUsers);
 exports.default = router;

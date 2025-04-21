@@ -4,24 +4,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loginUser = exports.registerUser = void 0;
-const bcrypt_1 = __importDefault(require("bcrypt"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const User_1 = __importDefault(require("../models/User"));
+const authService_1 = __importDefault(require("../services/authService"));
 const registerUser = async (req, res) => {
-    const { email, password, firstName, lastName, phoneNumber } = req.body;
-    const passwordHash = await bcrypt_1.default.hash(password, 10);
-    const user = new User_1.default({ email, passwordHash, firstName, lastName, phoneNumber });
-    await user.save();
-    res.status(201).json({ message: 'User registered' });
+    try {
+        const userData = req.body;
+        const user = await authService_1.default.register(userData);
+        res.status(201).json({ message: 'User registered', user });
+    }
+    catch (error) {
+        res.status(400).json({ error: error.message });
+    }
 };
 exports.registerUser = registerUser;
 const loginUser = async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User_1.default.findOne({ email });
-    if (!user || !(await bcrypt_1.default.compare(password, user.passwordHash))) {
-        return res.status(401).json({ error: 'Invalid credentials' });
+    try {
+        const { email, password } = req.body;
+        const result = await authService_1.default.login(email, password);
+        res.json(result);
     }
-    const token = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || '', { expiresIn: '7d' });
-    res.json({ token });
+    catch (error) {
+        res.status(401).json({ error: error.message });
+    }
 };
 exports.loginUser = loginUser;
