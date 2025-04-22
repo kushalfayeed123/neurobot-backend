@@ -8,10 +8,21 @@ import userRoutes from './routes/userRoutes';
 import routes from './routes';
 
 dotenv.config();
+
+// Connect to MongoDB
 connectDB();
 
 const app = express();
-app.use(cors());
+
+// CORS configuration
+app.use(cors({
+  origin: '*', // Allow all origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'], // Allowed headers
+  credentials: true, // Allow credentials
+  maxAge: 86400 // Cache preflight requests for 24 hours
+}));
+
 app.use(express.json());
 
 // API routes

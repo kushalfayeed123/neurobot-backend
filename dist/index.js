@@ -11,9 +11,17 @@ const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const routes_1 = __importDefault(require("./routes"));
 dotenv_1.default.config();
+// Connect to MongoDB
 (0, db_1.connectDB)();
 const app = (0, express_1.default)();
-app.use((0, cors_1.default)());
+// CORS configuration
+app.use((0, cors_1.default)({
+    origin: '*', // Allow all origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed methods
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'], // Allowed headers
+    credentials: true, // Allow credentials
+    maxAge: 86400 // Cache preflight requests for 24 hours
+}));
 app.use(express_1.default.json());
 // API routes
 app.use('/api/auth', authRoutes_1.default);
