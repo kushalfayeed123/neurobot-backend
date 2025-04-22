@@ -15,12 +15,29 @@ dotenv_1.default.config();
 (0, db_1.connectDB)();
 const app = (0, express_1.default)();
 // CORS configuration
+const allowedOrigins = ['http://localhost:4200', 'http://localhost:3000', 'https://neurobot-backend-ivory.vercel.app'];
 app.use((0, cors_1.default)({
-    origin: '*', // Allow all origins
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed methods
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'], // Allowed headers
-    credentials: true, // Allow credentials
-    maxAge: 86400 // Cache preflight requests for 24 hours
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin)
+            return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-API-Key',
+        'x-requested-with',
+        'Accept',
+        'Origin'
+    ],
+    credentials: true,
+    maxAge: 86400
 }));
 app.use(express_1.default.json());
 // API routes
