@@ -15,7 +15,12 @@ connectDB();
 const app = express();
 
 // CORS configuration
-const allowedOrigins = ['http://localhost:4200', 'http://localhost:3000', 'https://neuro-bot-frontend.vercel.app'];
+const allowedOrigins = [
+  'http://localhost:4200',
+  'http://localhost:3000',
+  'https://neuro-bot-frontend.vercel.app',
+  'https://neurobot-backend-ivory.vercel.app'
+];
 
 app.use(cors({
   origin: function(origin, callback) {

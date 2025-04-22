@@ -15,7 +15,12 @@ dotenv_1.default.config();
 (0, db_1.connectDB)();
 const app = (0, express_1.default)();
 // CORS configuration
-const allowedOrigins = ['http://localhost:4200', 'http://localhost:3000', 'https://neuro-bot-frontend.vercel.app'];
+const allowedOrigins = [
+    'http://localhost:4200',
+    'http://localhost:3000',
+    'https://neuro-bot-frontend.vercel.app',
+    'https://neurobot-backend-ivory.vercel.app'
+];
 app.use((0, cors_1.default)({
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
