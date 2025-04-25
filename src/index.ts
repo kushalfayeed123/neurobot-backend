@@ -6,6 +6,7 @@ import { connectDB } from './config/db';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import routes from './routes';
+import cryptoWalletRoutes from './routes/cryptoWalletRoutes';
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ app.use(express.json());
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/crypto', cryptoWalletRoutes);
 app.use(routes);
 
 const PORT = process.env.PORT || 5000;

@@ -1,15 +1,8 @@
 import { Request, Response } from 'express';
 import userService from '../services/userService';
+import { AuthRequest } from '../types/auth';
 
-interface AuthRequest extends Request {
-  user?: {
-    userId: string,
-    email: string,
-    role: string,
-    iat: number,
-    exp: number
-  };
-}
+
 
 export const getUserProfile = async (req: AuthRequest, res: Response) => {
   try {

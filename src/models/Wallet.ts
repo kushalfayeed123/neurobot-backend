@@ -5,7 +5,7 @@ const walletSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
   // Wallet details
   balance: { type: Number, default: 0 },
-  currency: { type: String, default: 'USD' },
+  currency: { type: String, required: true },
   // Pool reference (if user is in a pool)
   poolId: { type: mongoose.Schema.Types.ObjectId, ref: 'TradingPool', required: false },
   // Transaction history
@@ -25,6 +25,8 @@ const walletSchema = new mongoose.Schema({
   totalPnL: { type: Number, default: 0 },
   // Status
   isLocked: { type: Boolean, default: false },
+  network: { type: String, required: true },
+  address: { type: String, required: true },
   lastUpdated: { type: Date, default: Date.now }
 }, { timestamps: true });
 
