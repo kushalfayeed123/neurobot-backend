@@ -8,6 +8,8 @@ const Transaction_1 = __importDefault(require("../models/Transaction"));
 const CryptoWallet_1 = __importDefault(require("../models/CryptoWallet"));
 const User_1 = __importDefault(require("../models/User"));
 const mongoose_1 = require("mongoose");
+const models_1 = require("../models");
+const uuid_1 = require("uuid");
 class CryptoPaymentService {
     /**
      * Get available crypto wallets for deposits
@@ -26,38 +28,53 @@ class CryptoPaymentService {
     /**
      * Create a new crypto transaction
      */
-    async createTransaction(userId, transactionData) {
+    async createTransaction(userId, walletId, amount, txHash) {
         try {
+            // Check if user exists
             const user = await User_1.default.findById(userId);
             if (!user) {
                 throw new Error('User not found');
             }
-            const wallet = await CryptoWallet_1.default.findOne({
-                currency: transactionData.currency,
-                isActive: true
-            });
+            // Get wallet details
+            const wallet = await CryptoWallet_1.default.findById(walletId);
             if (!wallet) {
-                throw new Error('Invalid currency or wallet not available');
+                throw new Error('Wallet not found');
             }
+            // Validate deposit amount
+            if (wallet.minDeposit && amount < wallet.minDeposit) {
+                throw new Error(`Minimum deposit amount is ${wallet.minDeposit} ${wallet.currency}`);
+            }
+            if (wallet.maxDeposit && amount > wallet.maxDeposit) {
+                throw new Error(`Maximum deposit amount is ${wallet.maxDeposit} ${wallet.currency}`);
+            }
+            // Check if transaction hash already exists
+            const existingTx = await Transaction_1.default.findOne({ txHash });
+            if (existingTx) {
+                throw new Error('Transaction hash already exists');
+            }
+            // Create transaction record
             const transaction = new Transaction_1.default({
+                transactionId: (0, uuid_1.v4)(),
                 userId: new mongoose_1.Types.ObjectId(userId),
-                amount: transactionData.amount,
-                currency: transactionData.currency,
-                senderAddress: transactionData.senderAddress,
+                cryptoWalletId: wallet._id,
                 type: 'CRYPTO_DEPOSIT',
+                amount,
+                currency: wallet.currency,
                 status: 'PENDING',
-                txHash: transactionData.transactionHash,
+                txHash,
+                description: `Deposit of ${amount} ${wallet.currency} to ${wallet.network} address`,
                 paymentMethod: 'CRYPTO',
                 paymentDetails: {
                     network: wallet.network,
-                    receiverAddress: wallet.address
+                    address: wallet.address
                 }
             });
             await transaction.save();
             return transaction;
         }
         catch (error) {
-            throw new Error('Failed to create transaction');
+            console.log(error);
+            throw new Error(`Failed to create deposit transaction: ${error}`);
         }
     }
     /**
@@ -99,7 +116,7 @@ class CryptoPaymentService {
      */
     async approveTransaction(transactionId) {
         try {
-            const transaction = await Transaction_1.default.findById(transactionId);
+            const transaction = await Transaction_1.default.findOne({ transactionId });
             if (!transaction) {
                 throw new Error('Transaction not found');
             }
@@ -113,9 +130,8 @@ class CryptoPaymentService {
             if (!user) {
                 throw new Error('User not found');
             }
-            const wallet = await CryptoWallet_1.default.findOne({
-                userId: user._id,
-                currency: transaction.currency
+            const wallet = await models_1.Wallet.findOne({
+                userId: transaction.userId,
             });
             if (!wallet) {
                 throw new Error('User wallet not found');
@@ -125,6 +141,7 @@ class CryptoPaymentService {
             return transaction;
         }
         catch (error) {
+            console.log(error);
             throw new Error('Failed to approve transaction');
         }
     }
@@ -133,7 +150,7 @@ class CryptoPaymentService {
      */
     async rejectTransaction(transactionId, notes) {
         try {
-            const transaction = await Transaction_1.default.findById(transactionId);
+            const transaction = await Transaction_1.default.findOne({ transactionId });
             if (!transaction) {
                 throw new Error('Transaction not found');
             }

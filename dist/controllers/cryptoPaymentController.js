@@ -7,15 +7,16 @@ const cryptoPaymentService_1 = require("../services/cryptoPaymentService");
  */
 const createTransaction = async (req, res) => {
     try {
+        const { walletId, amount, txHash } = req.body;
         const userId = req.user?.userId;
         if (!userId) {
-            return res.status(401).json({ error: 'Unauthorized' });
+            return res.status(401).json({ error: "Unauthorized" });
         }
-        const transaction = await cryptoPaymentService_1.cryptoPaymentService.createTransaction(userId.toString(), req.body);
+        const transaction = await cryptoPaymentService_1.cryptoPaymentService.createTransaction(userId, walletId, amount, txHash);
         res.status(201).json(transaction);
     }
     catch (error) {
-        res.status(400).json({ error: 'Failed to create transaction' });
+        res.status(400).json({ error: "Failed to create transaction" });
     }
 };
 exports.createTransaction = createTransaction;
@@ -26,13 +27,13 @@ const getUserTransactions = async (req, res) => {
     try {
         const userId = req.user?.userId;
         if (!userId) {
-            return res.status(401).json({ error: 'Unauthorized' });
+            return res.status(401).json({ error: "Unauthorized" });
         }
         const transactions = await cryptoPaymentService_1.cryptoPaymentService.getUserTransactions(userId.toString());
         res.json(transactions);
     }
     catch (error) {
-        res.status(500).json({ error: 'Failed to fetch user transactions' });
+        res.status(500).json({ error: "Failed to fetch user transactions" });
     }
 };
 exports.getUserTransactions = getUserTransactions;
@@ -45,7 +46,7 @@ const getPendingTransactions = async (req, res) => {
         res.json(transactions);
     }
     catch (error) {
-        res.status(500).json({ error: 'Failed to fetch pending transactions' });
+        res.status(500).json({ error: "Failed to fetch pending transactions" });
     }
 };
 exports.getPendingTransactions = getPendingTransactions;
@@ -59,7 +60,7 @@ const approveTransaction = async (req, res) => {
         res.json(transaction);
     }
     catch (error) {
-        res.status(400).json({ error: 'Failed to approve transaction' });
+        res.status(400).json({ error: "Failed to approve transaction" });
     }
 };
 exports.approveTransaction = approveTransaction;
@@ -74,7 +75,7 @@ const rejectTransaction = async (req, res) => {
         res.json(transaction);
     }
     catch (error) {
-        res.status(400).json({ error: 'Failed to reject transaction' });
+        res.status(400).json({ error: "Failed to reject transaction" });
     }
 };
 exports.rejectTransaction = rejectTransaction;

@@ -2,6 +2,9 @@ import Transaction from '../models/Transaction';
 import CryptoWallet from '../models/CryptoWallet';
 import User from '../models/User';
 import { Types } from 'mongoose';
+import { Wallet } from '../models';
+import { v4 as uuidv4 } from 'uuid';
+
 
 class CryptoPaymentService {
   /**
@@ -21,47 +24,60 @@ class CryptoPaymentService {
   /**
    * Create a new crypto transaction
    */
-  async createTransaction(userId: string, transactionData: {
-    amount: number;
-    currency: string;
-    senderAddress: string;
-    transactionHash: string;
-  }) {
-    try {
-      const user = await User.findById(userId);
-      if (!user) {
-        throw new Error('User not found');
-      }
-
-      const wallet = await CryptoWallet.findOne({
-        currency: transactionData.currency,
-        isActive: true
-      });
-
-      if (!wallet) {
-        throw new Error('Invalid currency or wallet not available');
-      }
-
-      const transaction = new Transaction({
-        userId: new Types.ObjectId(userId),
-        amount: transactionData.amount,
-        currency: transactionData.currency,
-        senderAddress: transactionData.senderAddress,
-        type: 'CRYPTO_DEPOSIT',
-        status: 'PENDING',
-        txHash: transactionData.transactionHash,
-        paymentMethod: 'CRYPTO',
-        paymentDetails: {
-          network: wallet.network,
-          receiverAddress: wallet.address
+  async createTransaction(userId: string, walletId: string, amount: number, txHash: string) {
+    
+      try {
+        // Check if user exists
+        const user = await User.findById(userId);
+        if (!user) {
+          throw new Error('User not found');
         }
-      });
-
-      await transaction.save();
-      return transaction;
-    } catch (error) {
-      throw new Error('Failed to create transaction');
-    }
+  
+        // Get wallet details
+        const wallet = await CryptoWallet.findById(walletId);
+        if (!wallet) {
+          throw new Error('Wallet not found');
+        }
+  
+        // Validate deposit amount
+        if (wallet.minDeposit && amount < wallet.minDeposit) {
+          throw new Error(`Minimum deposit amount is ${wallet.minDeposit} ${wallet.currency}`);
+        }
+        
+        if (wallet.maxDeposit && amount > wallet.maxDeposit) {
+          throw new Error(`Maximum deposit amount is ${wallet.maxDeposit} ${wallet.currency}`);
+        }
+  
+        // Check if transaction hash already exists
+        const existingTx = await Transaction.findOne({ txHash });
+        if (existingTx) {
+          throw new Error('Transaction hash already exists');
+        }
+  
+        // Create transaction record
+        const transaction = new Transaction({
+          transactionId: uuidv4(),
+          userId: new Types.ObjectId(userId),
+          cryptoWalletId: wallet._id,
+          type: 'CRYPTO_DEPOSIT',
+          amount,
+          currency: wallet.currency,
+          status: 'PENDING',
+          txHash,
+          description: `Deposit of ${amount} ${wallet.currency} to ${wallet.network} address`,
+          paymentMethod: 'CRYPTO',
+          paymentDetails: {
+            network: wallet.network,
+            address: wallet.address
+          }
+        });
+  
+        await transaction.save();
+        return transaction;
+      } catch (error: any) {
+        console.log(error)
+        throw new Error(`Failed to create deposit transaction: ${error}`);
+      }
   }
 
   /**
@@ -103,7 +119,7 @@ class CryptoPaymentService {
    */
   async approveTransaction(transactionId: string) {
     try {
-      const transaction = await Transaction.findById(transactionId);
+      const transaction = await Transaction.findOne({transactionId});
       if (!transaction) {
         throw new Error('Transaction not found');
       }
@@ -121,9 +137,8 @@ class CryptoPaymentService {
         throw new Error('User not found');
       }
 
-      const wallet = await CryptoWallet.findOne({
-        userId: user._id,
-        currency: transaction.currency
+      const wallet = await Wallet.findOne({
+        userId: transaction.userId,
       });
 
       if (!wallet) {
@@ -135,6 +150,7 @@ class CryptoPaymentService {
 
       return transaction;
     } catch (error) {
+      console.log(error)
       throw new Error('Failed to approve transaction');
     }
   }
@@ -144,7 +160,7 @@ class CryptoPaymentService {
    */
   async rejectTransaction(transactionId: string, notes: string) {
     try {
-      const transaction = await Transaction.findById(transactionId);
+      const transaction = await Transaction.findOne({transactionId});
       if (!transaction) {
         throw new Error('Transaction not found');
       }
@@ -165,3 +181,5 @@ class CryptoPaymentService {
 }
 
 export const cryptoPaymentService = new CryptoPaymentService(); 
+
+

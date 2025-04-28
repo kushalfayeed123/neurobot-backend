@@ -1,23 +1,27 @@
-import { Request, Response } from 'express';
-import { cryptoPaymentService } from '../services/cryptoPaymentService';
-import { AuthRequest } from '../types/auth';
-
-
+import { Request, Response } from "express";
+import { cryptoPaymentService } from "../services/cryptoPaymentService";
+import { AuthRequest } from "../types/auth";
 
 /**
  * Create a new crypto transaction
  */
 export const createTransaction = async (req: AuthRequest, res: Response) => {
   try {
+    const { walletId, amount, txHash } = req.body;
     const userId = req.user?.userId;
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const transaction = await cryptoPaymentService.createTransaction(userId.toString(), req.body);
+    const transaction = await cryptoPaymentService.createTransaction(
+      userId,
+      walletId,
+      amount,
+      txHash
+    );
     res.status(201).json(transaction);
   } catch (error) {
-    res.status(400).json({ error: 'Failed to create transaction' });
+    res.status(400).json({ error: "Failed to create transaction" });
   }
 };
 
@@ -28,25 +32,30 @@ export const getUserTransactions = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const transactions = await cryptoPaymentService.getUserTransactions(userId.toString());
+    const transactions = await cryptoPaymentService.getUserTransactions(
+      userId.toString()
+    );
     res.json(transactions);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch user transactions' });
+    res.status(500).json({ error: "Failed to fetch user transactions" });
   }
 };
 
 /**
  * Get all pending transactions (admin only)
  */
-export const getPendingTransactions = async (req: AuthRequest, res: Response) => {
+export const getPendingTransactions = async (
+  req: AuthRequest,
+  res: Response
+) => {
   try {
     const transactions = await cryptoPaymentService.getPendingTransactions();
     res.json(transactions);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch pending transactions' });
+    res.status(500).json({ error: "Failed to fetch pending transactions" });
   }
 };
 
@@ -56,10 +65,12 @@ export const getPendingTransactions = async (req: AuthRequest, res: Response) =>
 export const approveTransaction = async (req: AuthRequest, res: Response) => {
   try {
     const { transactionId } = req.params;
-    const transaction = await cryptoPaymentService.approveTransaction(transactionId);
+    const transaction = await cryptoPaymentService.approveTransaction(
+      transactionId
+    );
     res.json(transaction);
   } catch (error) {
-    res.status(400).json({ error: 'Failed to approve transaction' });
+    res.status(400).json({ error: "Failed to approve transaction" });
   }
 };
 
@@ -70,9 +81,12 @@ export const rejectTransaction = async (req: AuthRequest, res: Response) => {
   try {
     const { transactionId } = req.params;
     const { notes } = req.body;
-    const transaction = await cryptoPaymentService.rejectTransaction(transactionId, notes);
+    const transaction = await cryptoPaymentService.rejectTransaction(
+      transactionId,
+      notes
+    );
     res.json(transaction);
   } catch (error) {
-    res.status(400).json({ error: 'Failed to reject transaction' });
+    res.status(400).json({ error: "Failed to reject transaction" });
   }
-}; 
+};

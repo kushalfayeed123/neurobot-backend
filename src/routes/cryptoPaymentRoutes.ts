@@ -1,24 +1,37 @@
-import { Router } from 'express';
-import { authenticateJWT } from '../middlewares/authMiddleware';
+import { Router } from "express";
+import { authenticateJWT } from "../middlewares/authMiddleware";
+// import {
+//   getAvailableWallets,
+//   getWalletByCurrencyAndNetwork,
+//   createDepositTransaction,
+//   getUserDeposits,
+//   getPendingDeposits,
+// } from "../controllers/cryptoWalletController";
 import {
-  getAvailableWallets,
-  getWalletByCurrencyAndNetwork,
-  createDepositTransaction,
-  getUserDeposits,
-  getPendingDeposits,
-  approveDeposit,
-  rejectDeposit
-} from '../controllers/cryptoWalletController';
+  createTransaction,
+  approveTransaction,
+  rejectTransaction,
+  getPendingTransactions,
+  getUserTransactions,
+} from "../controllers/cryptoPaymentController";
 
 const router = Router();
 
 // Public routes
 
 // Protected routes
-router.post('/deposits', authenticateJWT, createDepositTransaction);
-router.get('/deposits/user', authenticateJWT, getUserDeposits);
-router.get('/deposits/pending', authenticateJWT, getPendingDeposits);
-router.post('/deposits/:transactionId/approve', authenticateJWT, approveDeposit);
-router.post('/deposits/:transactionId/reject', authenticateJWT, rejectDeposit);
+router.post("/deposits", authenticateJWT, createTransaction);
+router.get("/deposits/user", authenticateJWT, getUserTransactions);
+router.get("/deposits/pending", authenticateJWT, getPendingTransactions);
+router.post(
+  "/deposits/:transactionId/approve",
+  authenticateJWT,
+  approveTransaction
+);
+router.post(
+  "/deposits/:transactionId/reject",
+  authenticateJWT,
+  rejectTransaction
+);
 
-export default router; 
+export default router;

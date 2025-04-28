@@ -25,8 +25,7 @@ const walletSchema = new mongoose.Schema({
   totalPnL: { type: Number, default: 0 },
   // Status
   isLocked: { type: Boolean, default: false },
-  network: { type: String, required: true },
-  address: { type: String, required: true },
+  
   lastUpdated: { type: Date, default: Date.now }
 }, { timestamps: true });
 
