@@ -216,7 +216,7 @@ class CryptoWalletService {
    */
   async approveDeposit(transactionId: string, adminId: string) {
     try {
-      const transaction = await Transaction.findById(transactionId);
+      const transaction = await Transaction.findOne({transactionId});
       if (!transaction) {
         throw new Error('Transaction not found');
       }

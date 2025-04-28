@@ -10,6 +10,8 @@ const db_1 = require("./config/db");
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const routes_1 = __importDefault(require("./routes"));
+const cryptoWalletRoutes_1 = __importDefault(require("./routes/cryptoWalletRoutes"));
+const cryptoPaymentRoutes_1 = __importDefault(require("./routes/cryptoPaymentRoutes"));
 dotenv_1.default.config();
 // Connect to MongoDB
 (0, db_1.connectDB)();
@@ -48,6 +50,8 @@ app.use(express_1.default.json());
 // API routes
 app.use('/api/auth', authRoutes_1.default);
 app.use('/api/user', userRoutes_1.default);
+app.use('/api/crypto', cryptoWalletRoutes_1.default);
+app.use('/api/crypto', cryptoPaymentRoutes_1.default);
 app.use(routes_1.default);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
