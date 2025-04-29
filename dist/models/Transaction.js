@@ -8,29 +8,54 @@ const transactionSchema = new mongoose_1.default.Schema({
     // Transaction identification
     transactionId: { type: String, required: true, unique: true },
     // User reference
-    userId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
     // Pool reference (if applicable)
-    poolId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'TradingPool' },
+    poolId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "TradingPool" },
     // Crypto wallet reference (if applicable)
-    cryptoWalletId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'CryptoWallet' },
+    cryptoWalletId: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: "CryptoWallet",
+    },
     // Transaction details
     type: {
         type: String,
-        enum: ['DEPOSIT', 'WITHDRAWAL', 'PROFIT_DISTRIBUTION', 'FEE', 'REFUND', 'CRYPTO_DEPOSIT', 'CRYPTO_WITHDRAWAL'],
-        required: true
+        enum: [
+            "DEPOSIT",
+            "WITHDRAWAL",
+            "PROFIT_DISTRIBUTION",
+            "FEE",
+            "REFUND",
+            "CRYPTO_DEPOSIT",
+            "CRYPTO_WITHDRAWAL",
+        ],
+        required: true,
     },
     amount: { type: Number, required: true },
     currency: {
         type: String,
-        enum: ['USD', 'BTC', 'ETH', 'USDT', 'USDC'],
-        required: true
+        enum: ["USD", "BTC", "ETH", "USDT", "USDC"],
+        required: true,
     },
     // Transaction status
     status: {
         type: String,
-        enum: ['PENDING', 'COMPLETED', 'FAILED', 'CANCELLED', 'CONFIRMED', 'APPROVED', 'REJECTED'],
-        default: 'PENDING'
+        enum: [
+            "PENDING",
+            "COMPLETED",
+            "FAILED",
+            "CANCELLED",
+            "CONFIRMED",
+            "APPROVED",
+            "REJECTED",
+        ],
+        default: "PENDING",
     },
+    beneficiaryAccountNumber: { type: String },
+    beneficiaryWalletAddress: { type: String },
     // Payment details
     paymentMethod: { type: String },
     paymentDetails: { type: Map, of: mongoose_1.default.Schema.Types.Mixed },
@@ -45,8 +70,8 @@ const transactionSchema = new mongoose_1.default.Schema({
     notes: { type: String },
     metadata: { type: Map, of: mongoose_1.default.Schema.Types.Mixed },
     // Admin information
-    processedBy: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'User' },
-    processedAt: { type: Date }
+    processedBy: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "User" },
+    processedAt: { type: Date },
 }, { timestamps: true });
 // Create indexes for efficient querying
 transactionSchema.index({ userId: 1, createdAt: -1 });
@@ -54,4 +79,17 @@ transactionSchema.index({ poolId: 1, createdAt: -1 });
 transactionSchema.index({ type: 1, status: 1 });
 transactionSchema.index({ status: 1 });
 transactionSchema.index({ txHash: 1 }, { unique: true, sparse: true });
-exports.default = mongoose_1.default.model('Transaction', transactionSchema);
+// transactionSchema.pre("validate", function (next) {
+//   if (
+//     this.type?.toString().includes("WITHDRAWAL") &&
+//     (!this.beneficiaryAccountNumber || !this.beneficiaryWalletAddress)
+//   ) {
+//     return next(
+//       new Error(
+//         "Withdrawal must include a beneficiary account number or wallet address"
+//       )
+//     );
+//   }
+//   next();
+// });
+exports.default = mongoose_1.default.model("Transaction", transactionSchema);

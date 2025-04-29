@@ -7,12 +7,12 @@ const cryptoPaymentService_1 = require("../services/cryptoPaymentService");
  */
 const createTransaction = async (req, res) => {
     try {
-        const { walletId, amount, txHash } = req.body;
+        const { walletId, amount, txHash, type, beneficiaryAccountNumber, beneficiaryWalletAddress, } = req.body;
         const userId = req.user?.userId;
         if (!userId) {
             return res.status(401).json({ error: "Unauthorized" });
         }
-        const transaction = await cryptoPaymentService_1.cryptoPaymentService.createTransaction(userId, walletId, amount, txHash);
+        const transaction = await cryptoPaymentService_1.cryptoPaymentService.createTransaction(userId, walletId, amount, txHash, type, beneficiaryAccountNumber, beneficiaryWalletAddress);
         res.status(201).json(transaction);
     }
     catch (error) {

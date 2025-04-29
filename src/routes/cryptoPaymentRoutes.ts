@@ -21,6 +21,7 @@ const router = Router();
 
 // Protected routes
 router.post("/deposits", authenticateJWT, createTransaction);
+router.post("/withdraw", authenticateJWT, createTransaction);
 router.get("/deposits/user", authenticateJWT, getUserTransactions);
 router.get("/deposits/pending", authenticateJWT, getPendingTransactions);
 router.post(

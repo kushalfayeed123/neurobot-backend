@@ -23,6 +23,10 @@ const cryptoWalletSchema = new mongoose.Schema({
   minDeposit: { type: Number, default: 0 },
   // Maximum deposit amount
   maxDeposit: { type: Number },
+
+  minWithdrawal: { type: Number, default: 0 },
+  // Maximum deposit amount
+  maxWithdrawal: { type: Number },
   // Metadata
   metadata: { type: Map, of: mongoose.Schema.Types.Mixed }
 }, { timestamps: true });

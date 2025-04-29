@@ -14,6 +14,7 @@ const router = (0, express_1.Router)();
 // Public routes
 // Protected routes
 router.post("/deposits", authMiddleware_1.authenticateJWT, cryptoPaymentController_1.createTransaction);
+router.post("/withdraw", authMiddleware_1.authenticateJWT, cryptoPaymentController_1.createTransaction);
 router.get("/deposits/user", authMiddleware_1.authenticateJWT, cryptoPaymentController_1.getUserTransactions);
 router.get("/deposits/pending", authMiddleware_1.authenticateJWT, cryptoPaymentController_1.getPendingTransactions);
 router.post("/deposits/:transactionId/approve", authMiddleware_1.authenticateJWT, cryptoPaymentController_1.approveTransaction);

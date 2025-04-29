@@ -7,7 +7,14 @@ import { AuthRequest } from "../types/auth";
  */
 export const createTransaction = async (req: AuthRequest, res: Response) => {
   try {
-    const { walletId, amount, txHash } = req.body;
+    const {
+      walletId,
+      amount,
+      txHash,
+      type,
+      beneficiaryAccountNumber,
+      beneficiaryWalletAddress,
+    } = req.body;
     const userId = req.user?.userId;
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
@@ -17,7 +24,10 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
       userId,
       walletId,
       amount,
-      txHash
+      txHash,
+      type,
+      beneficiaryAccountNumber,
+      beneficiaryWalletAddress
     );
     res.status(201).json(transaction);
   } catch (error) {
