@@ -20,6 +20,7 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:4200',
   'http://localhost:3000',
+  'http://localhost:8000',
   'https://neuro-bot-frontend.vercel.app',
   'https://neurobot-backend-ivory.vercel.app'
 ];

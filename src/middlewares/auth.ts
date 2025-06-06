@@ -24,12 +24,12 @@ export const authenticateApiKey = async (req: Request, res: Response, next: Next
     }
 
     // Check IP whitelist if configured
-    if (key.ipWhitelist && key.ipWhitelist.length > 0) {
-      const clientIp = req.ip || '';
-      if (!key.ipWhitelist.includes(clientIp)) {
-        return res.status(401).json({ error: 'IP not whitelisted' });
-      }
-    }
+    // if (key.ipWhitelist && key.ipWhitelist.length > 0) {
+    //   const clientIp = req.ip || '';
+    //   if (!key.ipWhitelist.includes(clientIp)) {
+    //     return res.status(401).json({ error: 'IP not whitelisted' });
+    //   }
+    // }
 
     // Update usage statistics
     key.lastUsed = new Date();

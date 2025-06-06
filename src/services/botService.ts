@@ -1,5 +1,13 @@
-import { Trade, BotSettings, BotLog, User, TradingPool, Notification } from '../models';
-import { v4 as uuidv4 } from 'uuid';
+import mongoose from "mongoose";
+import {
+  Trade,
+  BotSettings,
+  BotLog,
+  User,
+  TradingPool,
+  Notification,
+} from "../models";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Service for managing bot operations and logging
@@ -13,7 +21,7 @@ class BotService {
   async logActivity(logData: {
     userId?: string;
     poolId?: string;
-    level: 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
+    level: "INFO" | "WARNING" | "ERROR" | "CRITICAL";
     message: string;
     botId: string;
     tradeId?: string;
@@ -22,21 +30,28 @@ class BotService {
   }) {
     const log = new BotLog({
       logId: uuidv4(),
-      ...logData
+      ...logData,
+      userId: logData.userId
+        ? new mongoose.Types.ObjectId(logData.userId)
+        : undefined,
+      poolId: logData.poolId
+        ? new mongoose.Types.ObjectId(logData.poolId)
+        : undefined,
     });
 
     await log.save();
 
-    // If error or critical, create notification
-    if (logData.level === 'ERROR' || logData.level === 'CRITICAL') {
+    if (logData.level === "ERROR" || logData.level === "CRITICAL") {
       const notification = new Notification({
         notificationId: uuidv4(),
-        userId: logData.userId,
-        type: 'BOT_STATUS_CHANGE',
+        userId: logData.userId
+          ? new mongoose.Types.ObjectId(logData.userId)
+          : undefined,
+        type: "BOT_STATUS_CHANGE",
         title: `Bot ${logData.level.toLowerCase()} alert`,
         message: logData.message,
-        priority: logData.level === 'CRITICAL' ? 'HIGH' : 'MEDIUM',
-        metadata: logData.metadata
+        priority: logData.level === "CRITICAL" ? "HIGH" : "MEDIUM",
+        metadata: logData.metadata,
       });
 
       await notification.save();
@@ -58,7 +73,7 @@ class BotService {
       symbol: string;
       stake: number;
       contractDuration: number;
-      contractType: 'CALL' | 'PUT';
+      contractType: "CALL" | "PUT";
       maxDailyLoss: number;
       maxConsecutiveLosses: number;
       riskPercentage: number;
@@ -79,8 +94,8 @@ class BotService {
     let botSettings = await BotSettings.findOne({
       $or: [
         { userId, botId },
-        { poolId, botId }
-      ]
+        { poolId, botId },
+      ],
     });
 
     if (!botSettings) {
@@ -89,7 +104,7 @@ class BotService {
         userId,
         poolId,
         botId,
-        ...settings
+        ...settings,
       });
     } else {
       // Update existing settings
@@ -106,10 +121,11 @@ class BotService {
    * @returns Created trade record
    */
   async logTrade(tradeData: {
+    tradeId?: string;
     userId?: string;
     poolId?: string;
     symbol: string;
-    contractType: 'CALL' | 'PUT';
+    contractType: "CALL" | "PUT";
     stake: number;
     entryPrice: number;
     contractDuration: number;
@@ -118,11 +134,12 @@ class BotService {
     metadata?: Record<string, any>;
   }) {
     const trade = new Trade({
-      tradeId: uuidv4(),
+      tradeId: tradeData?.metadata?.contractId.toString(),
       ...tradeData,
-      status: 'OPEN',
-      entryTime: new Date()
+      status: "OPEN",
+      entryTime: new Date(),
     });
+    console.log(trade)
 
     await trade.save();
 
@@ -130,11 +147,11 @@ class BotService {
     await this.logActivity({
       userId: tradeData.userId,
       poolId: tradeData.poolId,
-      level: 'INFO',
+      level: "INFO",
       message: `Trade executed: ${tradeData.contractType} ${tradeData.symbol} at ${tradeData.entryPrice}`,
       botId: tradeData.botId,
       tradeId: trade.tradeId,
-      metadata: tradeData.metadata
+      metadata: tradeData.metadata,
     });
 
     return trade;
@@ -149,18 +166,18 @@ class BotService {
     tradeId: string;
     exitPrice: number;
     profit: number;
-    result: 'WIN' | 'LOSS' | 'DRAW';
+    result: "WIN" | "LOSS" | "DRAW";
     metadata?: Record<string, any>;
   }) {
     const trade = await Trade.findOne({ tradeId: tradeData.tradeId });
     if (!trade) {
-      throw new Error('Trade not found');
+      throw new Error("Trade not found");
     }
 
     trade.exitPrice = tradeData.exitPrice;
     trade.profit = tradeData.profit;
     trade.result = tradeData.result;
-    trade.status = 'CLOSED';
+    trade.status = "CLOSED";
     trade.exitTime = new Date();
     if (tradeData.metadata) {
       trade.metadata = tradeData.metadata;
@@ -172,11 +189,11 @@ class BotService {
     await this.logActivity({
       userId: trade.userId?.toString(),
       poolId: trade.poolId?.toString(),
-      level: 'INFO',
+      level: "INFO",
       message: `Trade closed: ${trade.contractType} ${trade.symbol} with ${tradeData.result}, profit: ${tradeData.profit}`,
       botId: trade.botId,
       tradeId: trade.tradeId,
-      metadata: tradeData.metadata
+      metadata: tradeData.metadata,
     });
 
     return trade;
@@ -199,7 +216,7 @@ class BotService {
     // Build query
     const query: any = {
       botId,
-      status: 'CLOSED'
+      status: "CLOSED",
     };
 
     if (userId) query.userId = userId;
@@ -215,9 +232,9 @@ class BotService {
 
     // Calculate metrics
     const totalTrades = trades.length;
-    const winningTrades = trades.filter(t => t.result === 'WIN').length;
+    const winningTrades = trades.filter((t) => t.result === "WIN").length;
     const totalProfit = trades.reduce((sum, t) => sum + (t.profit || 0), 0);
-    const profitableTrades = trades.filter(t => (t.profit || 0) > 0).length;
+    const profitableTrades = trades.filter((t) => (t.profit || 0) > 0).length;
 
     return {
       totalTrades,
@@ -225,9 +242,9 @@ class BotService {
       totalProfit,
       profitableTrades,
       averageProfit: totalTrades > 0 ? totalProfit / totalTrades : 0,
-      profitFactor: totalTrades > 0 ? profitableTrades / totalTrades : 0
+      profitFactor: totalTrades > 0 ? profitableTrades / totalTrades : 0,
     };
   }
 }
 
-export default new BotService(); 
+export default new BotService();
